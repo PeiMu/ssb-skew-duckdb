@@ -25,10 +25,19 @@ echo "Loading SSB data... [DuckDB]"
 cat load_ssb.sql | duckdb ./ssb.duckdb
 echo "Loading SSB-skew data... [DuckDB]"
 cat load_ssb_skew.sql | duckdb ./ssb_skew.duckdb
-rm -rf data
+mv data/ duckdb_data/
 
 echo "Preparing benchmark data... [Postgres]"
 mkdir -p data/ssb
 mkdir -p data/ssb-skew
 
+sed -i"" -e "s|PATHVAR|${INSTALL_DIR}|" ./export-ssb.sql
+sed -i"" -e "s|PATHVAR|${INSTALL_DIR}|" ./export-ssb-skew.sql
+cat ./export-ssb.sql | duckdb ./ssb.duckdb
+cat ./export-ssb-skew.sql | duckdb ./ssb_skew.duckdb
 
+sed -i"" -e "s|true|1|g" ./data/ssb/date.tbl
+sed -i"" -e "s|false|0|g" ./data/ssb/date.tbl
+sed -i"" -e "s|true|1|g" ./data/ssb-skew/date.tbl
+sed -i"" -e "s|false|0|g" ./data/ssb-skew/date.tbl
+mv data/ postgres_data/
