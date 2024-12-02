@@ -1,0 +1,4 @@
+duckdb_data/
+postgres_data/
+venv/
+*.duckdb

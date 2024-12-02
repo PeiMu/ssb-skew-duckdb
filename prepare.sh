@@ -3,7 +3,8 @@ set -o pipefail
 
 if [[ ! -d "${INSTALL_DIR}/ssb-dbgen" ]]; then
   echo "Downloading SSB DBGen..."
-  git clone https://github.com/eyalroz/ssb-dbgen.git
+  git submodule update --init --recursive
+  git pull
   cd ssb-dbgen
   cmake .
   cmake --build .
@@ -41,3 +42,12 @@ sed -i"" -e "s|false|0|g" ./data/ssb/date.tbl
 sed -i"" -e "s|true|1|g" ./data/ssb-skew/date.tbl
 sed -i"" -e "s|false|0|g" ./data/ssb-skew/date.tbl
 mv data/ postgres_data/
+
+if [[ ! -d "${INSTALL_DIR}/venv" ]]; then
+  echo "Creating Python Virtual Environment"
+  python3 -m venv venv
+  source "venv/bin/activate"
+  pip install pip --upgrade > /dev/null
+  pip -q install -r requirements.txt
+  echo "$HOSTNAME"
+fi
