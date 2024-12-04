@@ -1,15 +1,11 @@
 INSTALL_DIR="${PWD}"
 set -o pipefail
 
-if [[ ! -d "${INSTALL_DIR}/ssb-dbgen" ]]; then
-  echo "Downloading SSB DBGen..."
-  git submodule update --init --recursive
-  git pull
-  cd ssb-dbgen
-  cmake .
-  cmake --build .
-  cd ..
-fi
+echo "Compile SSB-dbgen..."
+cd ssb-dbgen
+cmake .
+cmake --build .
+cd ..
 
 echo "Generating SSB data..."
 cd ssb-dbgen
@@ -19,8 +15,8 @@ mkdir -p data/ssb
 mv ssb-dbgen/*.tbl data/ssb
 
 # NOTE: make sure the duckdb is installed!!!
-sed -i"" -e "s|PATHVAR|${INSTALL_DIR}/data/ssb|" ./load_ssb.sql
-sed -i"" -e "s|PATHVAR|${INSTALL_DIR}/data/ssb|" ./load_ssb_skew.sql
+sed -i"" -e "s|PATHVAR|${INSTALL_DIR}|" ./load_ssb.sql
+sed -i"" -e "s|PATHVAR|${INSTALL_DIR}|" ./load_ssb_skew.sql
 
 echo "Loading SSB data... [DuckDB]"
 cat load_ssb.sql | duckdb ./ssb.duckdb

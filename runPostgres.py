@@ -40,7 +40,7 @@ def run_postgres(query_split=False):
             with open(table, "r") as tbl_file:
                 tbl_name = table.split("/")[-1].split(".")[0]
                 # skip the title bar
-                next(tbl_file)
+                #next(tbl_file)
                 cur.copy_expert(f"COPY {tbl_name} FROM STDIN ( FORMAT CSV, DELIMITER '|' )", tbl_file)
                 cur.execute("commit;")
         cur.execute(open(f"{cwd}/fkeys-{benchmark}.sql", "r").read())
