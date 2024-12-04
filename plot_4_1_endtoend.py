@@ -9,12 +9,11 @@ import matplotlib
 matplotlib.rcParams["pdf.fonttype"] = 42
 matplotlib.rcParams["ps.fonttype"] = 42
 
-threads = ["1", "8"]
+threads = ["1"]
 # benchmarks = ["imdb", "ssb", "ssb-skew"]
-# system_names = {"polar": "POLAR", "lip": "LIP", "duckdb": "DuckDB", "skinnermt": "SkinnerMT", "skinnerdb": "SkinnerDB",
-#                 "postgres": "Postgres"}
 benchmarks = ["ssb", "ssb-skew"]
-system_names = {"postgres": "query_split(False)", "postgres": "query_split(True)"}
+system_names = {"polar": "POLAR", "lip": "LIP", "duckdb": "DuckDB", "skinnermt": "SkinnerMT", "skinnerdb": "SkinnerDB",
+                "Postgres": "query_split(False)", "QuerySplit": "query_split(True)"}
 
 results = []
 for benchmark in benchmarks:
@@ -29,7 +28,7 @@ for benchmark in benchmarks:
             for index, row in df.iterrows():
                 query = str(row["name"]).split("/")[-1].split(".")[0]
                 timings.append(float(row["timing"]))
-            benchmark_results[system_names[system]].append(sum(timings))
+            benchmark_results[system_names[system]].append(sum(timings)/4)
 
     for system in ["skinnermt", "skinnerdb"]:
         if benchmark != "imdb":
@@ -42,18 +41,18 @@ for benchmark in benchmarks:
             timings = []
             for index, row in df.iterrows():
                 timings.append(float(row["Millis"]) / 1000)
-            benchmark_results[system_names[system]].append(sum(timings))
+            benchmark_results[system_names[system]].append(sum(timings)/4)
 
-    for system in ["postgres"]:
-        benchmark_results[system_names[system]] = []
+    for system in ["Postgres", "QuerySplit"]:
+        benchmark_results[system] = []
         for nthreads in threads:
-            path = os.getcwd() + f"/experiment-results/4_1_endtoend/{benchmark}/postgres/postgres-{nthreads}-{system}.csv"
+            path = os.getcwd() + f"/experiment-results/4_1_endtoend/{benchmark}/postgres/postgres-{nthreads}-{system_names[system]}.csv"
             df = pd.read_csv(path)
             df = df.groupby("query", as_index=False).median()
             timings = []
             for index, row in df.iterrows():
                 timings.append(float(row["duration"]))
-            benchmark_results[system_names[system]].append(sum(timings))
+            benchmark_results[system].append(sum(timings))
 
     results.append(benchmark_results)
 
@@ -71,7 +70,7 @@ bar_colors = {
 titles = {"imdb": "JOB", "ssb": "SSB", "ssb-skew": "SSB-skew"}
 
 for i in range(len(benchmarks)):
-    threads = [1, 8]
+    threads = [1]
     x = np.arange(len(threads))
     width = 0.14
     multiplier = 0
@@ -90,8 +89,8 @@ for i in range(len(benchmarks)):
         ax[i].set_xticks(x + 1.5 * width, threads)
     ax[i].set_title(titles[benchmarks[i]])
 
-    max_postgres = max(list(results[i]["query_split(False)"]))
-    max_query_split = max(list(results[i]["query_split(True)"]))
+    max_postgres = max(list(results[i]["Postgres"]))
+    max_query_split = max(list(results[i]["QuerySplit"]))
     max_skinner = 0
     if benchmarks[i] == "imdb":
         max_skinner = max(list(results[i]["SkinnerDB"]))
@@ -107,5 +106,7 @@ for i in range(len(benchmarks)):
 fig.supxlabel('Number of Threads')
 fig.supylabel('Total Execution Time (s)')
 
+if not os.path.exists("paper/figures"):
+    os.makedirs("paper/figures")
 plt.savefig("paper/figures/4_1_total.pdf")
 plt.clf()
