@@ -130,5 +130,5 @@ def run_postgres(query_split=False):
 
 
 if __name__ == "__main__":
-    run_postgres()
     run_postgres(True)
+    run_postgres()
